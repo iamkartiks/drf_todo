@@ -1,3 +1,6 @@
+import api
+from django.db.models import manager
+from django.http import response
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
@@ -54,4 +57,31 @@ def getNotes(request):
 def getNote(request,pk):
     notes = Note.objects.get(id=pk)
     serializer = NoteSerializer(notes, many=False)
+    return Response(serializer.data)
+
+@api_view(['PUT'])
+def updateNote(request,pk):
+    data = request.data
+    note = Note.objects.get(id=pk)
+    serializer = NoteSerializer(instance=note, data=data)
+
+    if serializer.is_valid():
+        serializer.save()
+    return Response(serializer.data)
+
+
+@api_view(['DELETE'])
+def deleteNote(request,pk):
+    node = Note.objects.get(id=pk)
+    node.delete()
+    return Response('Note Was Deleted !')
+
+
+@api_view(['POST'])
+def createNote(request):
+    data = request.data
+    note = Note.objects.create(
+        body = data['body']
+    )
+    serializer = NoteSerializer(note,many=False)
     return Response(serializer.data)
